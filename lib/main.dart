@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isListening = false;
   bool _isThinking = false;
   List<Map<String, String>> _history = [];
-  final String groqKey = "PASTE_YOUR_GROQ_KEY_HERE";
+  final String groqKey = "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";
   String getEmoji() {
     if (_emotion == "love") return "😍";
     if (_emotion == "sad") return "😔";
