@@ -17,17 +17,14 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-
-      - name: FULL AUTO - Sab Kuch Set Karo
+      - name: FULL AUTO - Offline Model + Voice + Icon + Permission
         run: |
-          # 1. Android Folder Banao
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- lib/ assets/ || true
-
-          # 2. pubspec.yaml FULL AUTO - Voice + Sab Kuch!
+          # 1. pubspec AUTO - Offline Model wala!
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
-          description: Real AI Girl - Groq AI + Emotion + Voice
+          description: Real AI Girl - Groq AI + Emotion + Voice - OFFLINE MODEL
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -35,7 +32,7 @@ jobs:
           dependencies:
             flutter:
               sdk: flutter
-            model_viewer_plus: ^1.5.2
+            flutter_3d_controller: ^2.0.0
             http: ^1.2.0
             flutter_tts: ^4.2.3
             speech_to_text: ^7.2.0
@@ -51,21 +48,22 @@ jobs:
             image_path: "assets/icons/app-icon.jpg"
             min_sdk_android: 21
           EOF
-
-          # 3. Kotlin 2.1.0 Auto Fix - Voice ke liye
+          # 2. main.dart AUTO Fix - model_viewer -> flutter_3d
+          sed -i "s|import 'package:model_viewer_plus/model_viewer_plus.dart';|import 'package:flutter_3d_controller/flutter_3d_controller.dart';|g" lib/main.dart || true
+          sed -i "s|ModelViewer(src: \"assets/models/Anime-Girl.glb\".*|Flutter3D(controller: Flutter3DController(), src: \"assets/models/Anime-Girl.glb\"),|g" lib/main.dart || true
+          # 3. Kotlin Fix
           sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"2.1.0\"/" android/settings.gradle || true
-
-          # 4. Clean + Get + Icon
+          # 4. Permission AUTO
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          grep -q "INTERNET" $MANIFEST || sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />|' $MANIFEST
           flutter clean
           flutter pub get
-          dart run flutter_launcher_icons || echo "Icon skip - phir bhi chalega"
-
-      - name: Build APK - Full Features + Voice + Icon + Key
+          dart run flutter_launcher_icons || echo "Icon skip"
+      - name: Build APK - Offline Model + Voice + Icon + Key
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
-
       - uses: actions/upload-artifact@v4
         with:
           name: ai-girl-pro-apk
