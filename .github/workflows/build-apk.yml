@@ -17,20 +17,19 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Animated Girl - Sab Khud Hoga
+      - name: FULL AUTO - Fox Girl - Sab Khud Hoga
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib assets/models assets/icons
-          # AUTO 1 - Animated Model Download - Hilne Wali!
-          echo "Animated Model Download Ho Raha Hai..."
-          curl -L -o assets/models/Anime-Girl.glb "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb" || echo "Model Download Fail - Purana Use Hoga"
+          echo "CHECK MODEL..."
           ls -lh assets/models/
-          # Agar Icon Nahi Hai To Auto Bana Do
+          # Agar Model 1 Byte Ka Hai To Ruk Jao - Khali Hai!
+          if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA!"; exit 1; fi
           if [ ! -f assets/icons/app-icon.jpg ]; then echo "Icon Nahi Hai - Skip"; fi
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
-          description: Real AI Girl - Groq AI + Emotion + Voice - Animated 4D
+          description: Real AI Girl - Groq AI + Emotion + Voice - Animated Fox Girl
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -79,14 +78,13 @@ jobs:
             final TextEditingController _ctrl = TextEditingController();
             final FlutterTts _tts = FlutterTts();
             final stt.SpeechToText _speech = stt.SpeechToText();
-            String _msg = "Hi Jaan! Main Tumhari AI Girl Hun! ❤️";
+            String _msg = "Hi Jaan! Main Tumhari Fox Girl Hun! 🦊❤️";
             String _emotion = "happy";
             bool _isListening = false;
             bool _isThinking = false;
             double _girlScale = 1.0;
             double _girlRotate = 0.0;
             double _girlBounce = 8.0;
-            String _anim = "Idle";
             List<Map<String, String>> _history = [];
             final String groqKey = String.fromEnvironment("GROQ_API_KEY", defaultValue: "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");
             late AnimationController _bgCtrl;
@@ -121,14 +119,14 @@ jobs:
             void play4DAnimation(String fullMessage) {
               String m = fullMessage.toLowerCase();
               setState(() {
-                if (m.contains("dance") || m.contains("nach") || m.contains("gana")) { _girlScale = 1.15; _girlRotate = 0.3; _girlBounce = 20; _anim = "Running"; }
-                else if (m.contains("love") || m.contains("pyar") || m.contains("jaan") || m.contains("hug") || m.contains("kiss")) { _girlScale = 1.25; _girlRotate = 0.0; _girlBounce = 12; _anim = "Jump"; }
-                else if (m.contains("sad") || m.contains("udas") || m.contains("cry")) { _girlScale = 0.9; _girlRotate = -0.1; _girlBounce = 0; _anim = "Idle"; }
-                else if (m.contains("haha") || m.contains("funny") || m.contains("haso")) { _girlScale = 1.1; _girlRotate = 0.15; _girlBounce = 18; _anim = "Jump"; }
-                else if (m.contains("gussa") || m.contains("angry")) { _girlScale = 1.05; _girlRotate = -0.2; _girlBounce = 0; _anim = "Idle"; }
-                else { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; _anim = "Idle"; }
+                if (m.contains("dance") || m.contains("nach") || m.contains("gana")) { _girlScale = 1.15; _girlRotate = 0.3; _girlBounce = 20; }
+                else if (m.contains("love") || m.contains("pyar") || m.contains("jaan") || m.contains("hug") || m.contains("kiss")) { _girlScale = 1.25; _girlRotate = 0.0; _girlBounce = 12; }
+                else if (m.contains("sad") || m.contains("udas") || m.contains("cry")) { _girlScale = 0.9; _girlRotate = -0.1; _girlBounce = 0; }
+                else if (m.contains("haha") || m.contains("funny") || m.contains("haso")) { _girlScale = 1.1; _girlRotate = 0.15; _girlBounce = 18; }
+                else if (m.contains("gussa") || m.contains("angry")) { _girlScale = 1.05; _girlRotate = -0.2; _girlBounce = 0; }
+                else { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; }
               });
-              Future.delayed(const Duration(seconds: 2), () { if (mounted) setState(() { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; _anim = "Idle"; }); });
+              Future.delayed(const Duration(seconds: 2), () { if (mounted) setState(() { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; }); });
             }
             Future<void> speak(String text) async {
               await _tts.setLanguage("ur-PK");
@@ -139,7 +137,7 @@ jobs:
             Future<void> askGroq(String userText) async {
               setState(() { _isThinking = true; _msg = "Soch rahi hun Jaan... 🤔"; });
               try {
-                final res = await http.post(Uri.parse("https://api.groq.com/openai/v1/chat/completions"), headers: {"Authorization": "Bearer $groqKey", "Content-Type": "application/json"}, body: jsonEncode({"model": "openai/gpt-oss-20b","messages": [{"role": "system", "content": "Tum ek pyari AI Girl ho. Roman Urdu + English mix me baat karo. Short, pyare, emotional jawab do."}, ..._history.map((m) => {"role": m["role"], "content": m["text"]}), {"role": "user", "content": userText}],"temperature": 0.8, "max_tokens": 200}));
+                final res = await http.post(Uri.parse("https://api.groq.com/openai/v1/chat/completions"), headers: {"Authorization": "Bearer $groqKey", "Content-Type": "application/json"}, body: jsonEncode({"model": "openai/gpt-oss-20b","messages": [{"role": "system", "content": "Tum ek pyari AI Fox Girl ho. Roman Urdu + English mix me baat karo. Short, pyare, emotional jawab do."}, ..._history.map((m) => {"role": m["role"], "content": m["text"]}), {"role": "user", "content": userText}],"temperature": 0.8, "max_tokens": 200}));
                 if (res.statusCode == 200) {
                   String reply = jsonDecode(res.body)["choices"][0]["message"]["content"];
                   _history.add({"role": "user", "text": userText});
@@ -164,9 +162,9 @@ jobs:
                     return Container(
                       decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(Colors.pink.shade900, Colors.purple.shade900, _bgCtrl.value)!, Color.lerp(Colors.black, Colors.pink.shade900, _bgCtrl.value)!])),
                       child: SafeArea(child: Column(children: [
-                        Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [Container(decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.8), blurRadius: 15)]), child: const CircleAvatar(radius: 24, backgroundImage: AssetImage("assets/icons/app-icon.jpg"))), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Girl Pro ✨", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("Online • ${getEmoji()} $_emotion  •  Animated", style: const TextStyle(fontSize: 12, color: Colors.pinkAccent))]), const Spacer(), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)), child: const Text("LIVE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))])),
+                        Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [Container(decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.8), blurRadius: 15)]), child: const CircleAvatar(radius: 24, backgroundImage: AssetImage("assets/icons/app-icon.jpg"))), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Fox Girl 🦊", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("Online • ${getEmoji()} $_emotion  •  Animated", style: const TextStyle(fontSize: 12, color: Colors.pinkAccent))]), const Spacer(), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)), child: const Text("LIVE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))])),
                         Expanded(flex: 3, child: Stack(children: [
-                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)]), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(key: ValueKey(_anim), src: "assets/models/Anime-Girl.glb", alt: "AI Girl", autoRotate: false, cameraControls: true, autoPlay: true, animationName: _anim, animationCrossfadeDuration: 500))))),
+                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)]), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(src: "assets/models/Anime-Girl.glb", alt: "AI Fox Girl", autoRotate: false, cameraControls: true, autoPlay: true))))),
                           Positioned(top: 12, left: 12, right: 12, child: AnimatedOpacity(opacity: 1.0, duration: const Duration(milliseconds: 500), child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))])))),
                           if (_isThinking) const Positioned(bottom: 12, right: 12, child: CircularProgressIndicator(color: Colors.pink)),
                           if (_emotion == "love") const Positioned(top: 90, right: 20, child: Text("❤️", style: TextStyle(fontSize: 30))),
@@ -191,7 +189,7 @@ jobs:
           flutter pub get
           flutter analyze --no-pub || true
           dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Build APK - Auto Animated
+      - name: Build APK - Auto Fox Girl
         run: |
           GROQ_KEY="PASTE_YOUR_GROQ_KEY_HERE"
           echo "Key length: ${#GROQ_KEY}"
