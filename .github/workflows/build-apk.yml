@@ -178,6 +178,8 @@ jobs:
           sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"2.1.0\"/" android/settings.gradle || true
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           grep -q "INTERNET" $MANIFEST || sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />|' $MANIFEST
+          grep -q "usesCleartextTraffic" $MANIFEST || sed -i 's|<application|<application android:usesCleartextTraffic="true"|' $MANIFEST
+          cat $MANIFEST
           flutter clean
           flutter pub get
           flutter analyze --no-pub || true
@@ -186,6 +188,8 @@ jobs:
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
+          echo "Key length: ${#GROQ_KEY}"
+          if [ -z "$GROQ_KEY" ]; then echo "ERROR: GROQ_API_KEY Secret Khali Hai!"; exit 1; fi
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
       - uses: actions/upload-artifact@v4
         with:
