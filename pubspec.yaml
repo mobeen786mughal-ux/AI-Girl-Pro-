@@ -1,0 +1,23 @@
+name: ai_girl_pro
+description: Real AI Girl - Groq AI + Emotion + Voice
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  model_viewer_plus: ^1.5.0
+  http: ^1.2.0
+  flutter_tts: ^4.0.2
+  speech_to_text: ^6.6.0
+  flutter_launcher_icons: ^0.13.1
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/models/Anime-Girl.glb
+    - assets/icons/app-icon.jpg
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app-icon.jpg"
