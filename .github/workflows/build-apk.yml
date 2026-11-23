@@ -17,19 +17,55 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: Auto Fix - Android + Kotlin + Icon
+
+      - name: FULL AUTO - Sab Kuch Set Karo
         run: |
+          # 1. Android Folder Banao
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
-          git checkout HEAD -- lib/ pubspec.yaml assets/ || true
-          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"1.9.24\"/" android/settings.gradle || true
+          git checkout HEAD -- lib/ assets/ || true
+
+          # 2. pubspec.yaml FULL AUTO - Voice + Sab Kuch!
+          cat > pubspec.yaml << 'EOF'
+          name: ai_girl_pro
+          description: Real AI Girl - Groq AI + Emotion + Voice
+          publish_to: 'none'
+          version: 1.0.0+1
+          environment:
+            sdk: '>=3.5.0 <4.0.0'
+          dependencies:
+            flutter:
+              sdk: flutter
+            model_viewer_plus: ^1.5.2
+            http: ^1.2.0
+            flutter_tts: ^4.2.3
+            speech_to_text: ^7.2.0
+            flutter_launcher_icons: ^0.14.3
+          flutter:
+            uses-material-design: true
+            assets:
+              - assets/models/Anime-Girl.glb
+              - assets/icons/app-icon.jpg
+          flutter_icons:
+            android: true
+            ios: true
+            image_path: "assets/icons/app-icon.jpg"
+            min_sdk_android: 21
+          EOF
+
+          # 3. Kotlin 2.1.0 Auto Fix - Voice ke liye
+          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"2.1.0\"/" android/settings.gradle || true
+
+          # 4. Clean + Get + Icon
           flutter clean
           flutter pub get
-          dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Auto Build APK
+          dart run flutter_launcher_icons || echo "Icon skip - phir bhi chalega"
+
+      - name: Build APK - Full Features + Voice + Icon + Key
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
+
       - uses: actions/upload-artifact@v4
         with:
           name: ai-girl-pro-apk
