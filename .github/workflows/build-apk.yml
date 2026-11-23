@@ -17,7 +17,7 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Fox Girl - Camera Fix
+      - name: FULL AUTO - Fox Girl - Final Fix
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
@@ -174,19 +174,11 @@ jobs:
                             src: "assets/models/Anime-Girl.glb",
                             alt: "AI Fox Girl",
                             autoRotate: true,
-                            autoRotateDelay: 2000,
                             cameraControls: true,
                             autoPlay: true,
-                            ar: false,
                             cameraOrbit: "0deg 75deg 4m",
-                            minCameraRadius: "1m",
-                            maxCameraRadius: "10m",
                             fieldOfView: "35deg",
-                            exposure: "1.6",
-                            shadowIntensity: "1",
-                            shadowSoftness: "0.5",
                             backgroundColor: const Color(0x00000000),
-                            loading: Loading.eager,
                           )))))),
                           Positioned(top: 12, left: 12, right: 12, child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))]))),
                           if (_isThinking) const Positioned(bottom: 12, right: 12, child: CircularProgressIndicator(color: Colors.pink)),
