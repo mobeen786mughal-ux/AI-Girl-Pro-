@@ -12,18 +12,23 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: gradle-
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Fox Girl - Test Delete Fix
+      - name: FULL AUTO - Shibahu Fox Girl
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib assets/models assets/icons
-          # TEST FOLDER DELETE - YEHI ERROR DE RAHA THA!
           rm -rf test
+          echo "=== SHIBAHU FILE CHECK ==="
           find . -iname "*.glb" -ls || true
           if [ ! -f assets/models/Anime-Girl.glb ]; then
             FOUND=$(find . -iname "*.glb" | head -n 1)
@@ -32,8 +37,9 @@ jobs:
           ls -lh assets/models/
           if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA!"; exit 1; fi
           SIZE=$(stat -c%s assets/models/Anime-Girl.glb)
+          echo "Shibahu Size: $SIZE"
           if [ "$SIZE" -lt 1000 ]; then echo "MODEL KHALI HAI!"; exit 1; fi
-          echo "MODEL OK! ✅"
+          echo "SHIBAHU OK! ✅"
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
           description: Real AI Girl - Groq AI + Emotion + Voice - Animated Fox Girl
@@ -85,7 +91,7 @@ jobs:
             final TextEditingController _ctrl = TextEditingController();
             final FlutterTts _tts = FlutterTts();
             final stt.SpeechToText _speech = stt.SpeechToText();
-            String _msg = "Hi Jaan! Main Tumhari Fox Girl Hun! 🦊❤️";
+            String _msg = "Hi Jaan! Main Tumhari Shibahu Hun! 🦊❤️";
             String _emotion = "happy";
             bool _isListening = false;
             bool _isThinking = false;
@@ -171,7 +177,7 @@ jobs:
                       child: SafeArea(child: Column(children: [
                         Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [Container(decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.8), blurRadius: 15)]), child: const CircleAvatar(radius: 24, backgroundImage: AssetImage("assets/icons/app-icon.jpg"))), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Fox Girl 🦊", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("Online • ${getEmoji()} $_emotion  •  Animated", style: const TextStyle(fontSize: 12, color: Colors.pinkAccent))]), const Spacer(), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)), child: const Text("LIVE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))])),
                         Expanded(flex: 3, child: Stack(children: [
-                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), color: Colors.white), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(src: "assets/models/Anime-Girl.glb", alt: "AI Fox Girl", autoRotate: true, cameraControls: true, autoPlay: true))))),
+                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), color: Colors.white), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(src: "assets/models/Anime-Girl.glb", alt: "Shibahu Fox Girl", autoRotate: true, cameraControls: true, autoPlay: true))))),
                           Positioned(top: 12, left: 12, right: 12, child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))]))),
                           if (_isThinking) const Positioned(bottom: 12, right: 12, child: CircularProgressIndicator(color: Colors.pink)),
                           if (_emotion == "love") const Positioned(top: 90, right: 20, child: Text("❤️", style: TextStyle(fontSize: 30))),
@@ -194,7 +200,7 @@ jobs:
           flutter clean
           flutter pub get
           dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Build APK - Auto Fox Girl
+      - name: Build APK - Shibahu
         run: |
           GROQ_KEY="PASTE_YOUR_GROQ_KEY_HERE"
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
