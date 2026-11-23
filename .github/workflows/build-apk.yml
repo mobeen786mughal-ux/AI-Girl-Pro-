@@ -17,7 +17,7 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Sab Kuch Khud Likho
+      - name: FULL AUTO - Message ke Hisaab se Movement
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
@@ -79,17 +79,13 @@ jobs:
             bool _isThinking = false;
             List<Map<String, String>> _history = [];
             final String groqKey = String.fromEnvironment("GROQ_API_KEY", defaultValue: "PASTE_YOUR_GROQ_KEY_HERE");
-            @override
-            void initState() {
-              super.initState();
-              girlController.onModelLoaded.addListener(() { girlController.playAnimation(); });
-            }
             String getEmoji() {
               if (_emotion == "love") return "😍";
               if (_emotion == "sad") return "😔";
               if (_emotion == "angry") return "😡";
               if (_emotion == "laugh") return "😂";
               if (_emotion == "shy") return "🙈";
+              if (_emotion == "dance") return "💃";
               return "😊";
             }
             String detectEmotion(String text) {
@@ -97,9 +93,42 @@ jobs:
               if (t.contains("love") || t.contains("pyar") || t.contains("jaan")) return "love";
               if (t.contains("sad") || t.contains("udas")) return "sad";
               if (t.contains("gussa") || t.contains("angry")) return "angry";
-              if (t.contains("haha") || t.contains("funny")) return "laugh";
+              if (t.contains("haha") || t.contains("funny") || t.contains("haso")) return "laugh";
               if (t.contains("sharm")) return "shy";
+              if (t.contains("dance") || t.contains("nach")) return "dance";
               return "happy";
+            }
+            Future<void> playEmotionAnimation(String fullMessage) async {
+              String m = fullMessage.toLowerCase();
+              try {
+                if (m.contains("dance") || m.contains("nach") || m.contains("gana") || m.contains("naach")) {
+                  await girlController.playAnimation(animationName: "dance");
+                  await girlController.setCameraOrbit(30, 75, 95);
+                } else if (m.contains("love") || m.contains("pyar") || m.contains("jaan") || m.contains("i love") || m.contains("hug") || m.contains("kiss")) {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(10, 80, 85);
+                } else if (m.contains("sad") || m.contains("udas") || m.contains("ro ") || m.contains("cry") || m.contains("dil toot")) {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(-20, 70, 110);
+                } else if (m.contains("haha") || m.contains("funny") || m.contains("haso") || m.contains("mazak")) {
+                  await girlController.playAnimation(animationName: "laugh");
+                  await girlController.setCameraOrbit(0, 80, 90);
+                } else if (m.contains("gussa") || m.contains("angry") || m.contains("naraz")) {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(-10, 75, 100);
+                } else if (m.contains("sharm") || m.contains("shy")) {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(15, 85, 105);
+                } else if (m.contains("bye") || m.contains("allah hafiz")) {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(25, 75, 105);
+                } else {
+                  await girlController.playAnimation(animationName: "idle");
+                  await girlController.setCameraOrbit(20, 75, 100);
+                }
+              } catch (e) {
+                try { await girlController.setCameraOrbit(20, 75, 100); } catch (_) {}
+              }
             }
             Future<void> speak(String text) async {
               await _tts.setLanguage("ur-PK");
@@ -115,8 +144,9 @@ jobs:
                   String reply = jsonDecode(res.body)["choices"][0]["message"]["content"];
                   _history.add({"role": "user", "text": userText});
                   _history.add({"role": "assistant", "text": reply});
-                  setState(() { _msg = reply; _emotion = detectEmotion(reply); _isThinking = false; });
-                  girlController.playAnimation();
+                  String emo = detectEmotion(reply + " " + userText);
+                  setState(() { _msg = reply; _emotion = emo; _isThinking = false; });
+                  await playEmotionAnimation(reply + " " + userText);
                   speak(reply);
                 } else { setState(() { _msg = "Jaan, thoda issue hai, phir se bolo na! 🥺"; _isThinking = false; }); }
               } catch (e) { setState(() { _msg = "Internet check karo Jaan! 📶"; _isThinking = false; }); }
@@ -144,7 +174,7 @@ jobs:
           flutter clean
           flutter pub get
           dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Build APK - Offline + Voice + Icon + Key
+      - name: Build APK - Message Movement
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
