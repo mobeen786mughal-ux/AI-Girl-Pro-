@@ -17,14 +17,14 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Message ke Hisaab se Movement
+      - name: FULL AUTO - Professional 4D App
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
-          description: Real AI Girl - Groq AI + Emotion + Voice - OFFLINE MODEL
+          description: Real AI Girl - Groq AI + Emotion + Voice - Professional 4D
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -32,11 +32,12 @@ jobs:
           dependencies:
             flutter:
               sdk: flutter
-            flutter_3d_controller: ^2.0.0
+            model_viewer_plus: ^1.5.2
             http: ^1.2.0
             flutter_tts: ^4.2.3
             speech_to_text: ^7.2.0
             flutter_launcher_icons: ^0.14.3
+            animate_do: ^3.3.4
           flutter:
             uses-material-design: true
             assets:
@@ -50,11 +51,13 @@ jobs:
           EOF
           cat > lib/main.dart << 'DART_EOF'
           import 'dart:convert';
+          import 'dart:math' as math;
           import 'package:flutter/material.dart';
-          import 'package:flutter_3d_controller/flutter_3d_controller.dart';
+          import 'package:model_viewer_plus/model_viewer_plus.dart';
           import 'package:http/http.dart' as http;
           import 'package:flutter_tts/flutter_tts.dart';
           import 'package:speech_to_text/speech_to_text.dart' as stt;
+          import 'package:animate_do/animate_do.dart';
           void main() => runApp(const AIGirlPro());
           class AIGirlPro extends StatelessWidget {
             const AIGirlPro({super.key});
@@ -68,17 +71,29 @@ jobs:
             @override
             State<HomeScreen> createState() => _HomeScreenState();
           }
-          class _HomeScreenState extends State<HomeScreen> {
+          class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             final TextEditingController _ctrl = TextEditingController();
             final FlutterTts _tts = FlutterTts();
             final stt.SpeechToText _speech = stt.SpeechToText();
-            Flutter3DController girlController = Flutter3DController();
             String _msg = "Hi Jaan! Main Tumhari AI Girl Hun! ❤️";
             String _emotion = "happy";
             bool _isListening = false;
             bool _isThinking = false;
+            double _girlScale = 1.0;
+            double _girlRotate = 0.0;
+            double _girlBounce = 0.0;
             List<Map<String, String>> _history = [];
             final String groqKey = String.fromEnvironment("GROQ_API_KEY", defaultValue: "PASTE_YOUR_GROQ_KEY_HERE");
+            late AnimationController _bgCtrl;
+            late AnimationController _bounceCtrl;
+            @override
+            void initState() {
+              super.initState();
+              _bgCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat(reverse: true);
+              _bounceCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
+            }
+            @override
+            void dispose() { _bgCtrl.dispose(); _bounceCtrl.dispose(); super.dispose(); }
             String getEmoji() {
               if (_emotion == "love") return "😍";
               if (_emotion == "sad") return "😔";
@@ -98,37 +113,17 @@ jobs:
               if (t.contains("dance") || t.contains("nach")) return "dance";
               return "happy";
             }
-            Future<void> playEmotionAnimation(String fullMessage) async {
+            void play4DAnimation(String fullMessage) {
               String m = fullMessage.toLowerCase();
-              try {
-                if (m.contains("dance") || m.contains("nach") || m.contains("gana") || m.contains("naach")) {
-                  await girlController.playAnimation(animationName: "dance");
-                  await girlController.setCameraOrbit(30, 75, 95);
-                } else if (m.contains("love") || m.contains("pyar") || m.contains("jaan") || m.contains("i love") || m.contains("hug") || m.contains("kiss")) {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(10, 80, 85);
-                } else if (m.contains("sad") || m.contains("udas") || m.contains("ro ") || m.contains("cry") || m.contains("dil toot")) {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(-20, 70, 110);
-                } else if (m.contains("haha") || m.contains("funny") || m.contains("haso") || m.contains("mazak")) {
-                  await girlController.playAnimation(animationName: "laugh");
-                  await girlController.setCameraOrbit(0, 80, 90);
-                } else if (m.contains("gussa") || m.contains("angry") || m.contains("naraz")) {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(-10, 75, 100);
-                } else if (m.contains("sharm") || m.contains("shy")) {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(15, 85, 105);
-                } else if (m.contains("bye") || m.contains("allah hafiz")) {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(25, 75, 105);
-                } else {
-                  await girlController.playAnimation(animationName: "idle");
-                  await girlController.setCameraOrbit(20, 75, 100);
-                }
-              } catch (e) {
-                try { await girlController.setCameraOrbit(20, 75, 100); } catch (_) {}
-              }
+              setState(() {
+                if (m.contains("dance") || m.contains("nach") || m.contains("gana")) { _girlScale = 1.15; _girlRotate = 0.3; _girlBounce = 20; }
+                else if (m.contains("love") || m.contains("pyar") || m.contains("jaan") || m.contains("hug") || m.contains("kiss")) { _girlScale = 1.25; _girlRotate = 0.0; _girlBounce = 12; }
+                else if (m.contains("sad") || m.contains("udas") || m.contains("cry")) { _girlScale = 0.9; _girlRotate = -0.1; _girlBounce = 0; }
+                else if (m.contains("haha") || m.contains("funny") || m.contains("haso")) { _girlScale = 1.1; _girlRotate = 0.15; _girlBounce = 18; }
+                else if (m.contains("gussa") || m.contains("angry")) { _girlScale = 1.05; _girlRotate = -0.2; _girlBounce = 0; }
+                else { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; }
+              });
+              Future.delayed(const Duration(seconds: 2), () { if (mounted) setState(() { _girlScale = 1.0; _girlRotate = 0.0; _girlBounce = 8; }); });
             }
             Future<void> speak(String text) async {
               await _tts.setLanguage("ur-PK");
@@ -146,7 +141,7 @@ jobs:
                   _history.add({"role": "assistant", "text": reply});
                   String emo = detectEmotion(reply + " " + userText);
                   setState(() { _msg = reply; _emotion = emo; _isThinking = false; });
-                  await playEmotionAnimation(reply + " " + userText);
+                  play4DAnimation(reply + " " + userText);
                   speak(reply);
                 } else { setState(() { _msg = "Jaan, thoda issue hai, phir se bolo na! 🥺"; _isThinking = false; }); }
               } catch (e) { setState(() { _msg = "Internet check karo Jaan! 📶"; _isThinking = false; }); }
@@ -158,12 +153,26 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Scaffold(
-                appBar: AppBar(backgroundColor: Colors.pink, title: Row(children: [const CircleAvatar(backgroundImage: AssetImage("assets/icons/app-icon.jpg")), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Girl Pro", style: TextStyle(fontWeight: FontWeight.bold)), Text("Online • ${getEmoji()} $_emotion", style: const TextStyle(fontSize: 12))])])),
-                body: Column(children: [
-                  Expanded(flex: 3, child: Stack(children: [Flutter3D(controller: girlController, src: "assets/models/Anime-Girl.glb"), Positioned(top: 10, left: 10, right: 10, child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(15)), child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 16)))), if (_isThinking) const Positioned(bottom: 10, right: 10, child: CircularProgressIndicator(color: Colors.pink))])),
-                  Container(padding: const EdgeInsets.all(8), child: Wrap(spacing: 8, children: [for (var b in ["Hi Jaan! ❤️", "Baat Karo", "Dance Karo 💃", "I Love You", "Sad Hun"]) ElevatedButton(onPressed: () => askGroq(b), style: ElevatedButton.styleFrom(backgroundColor: Colors.pink), child: Text(b, style: const TextStyle(color: Colors.white)))])),
-                  Padding(padding: const EdgeInsets.all(10), child: Row(children: [IconButton(onPressed: listen, icon: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.pink, size: 30)), Expanded(child: TextField(controller: _ctrl, decoration: InputDecoration(hintText: "Kuch likho Jaan...", filled: true, fillColor: Colors.white12, border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none)))), IconButton(onPressed: () { if (_ctrl.text.isNotEmpty) { askGroq(_ctrl.text); _ctrl.clear(); } }, icon: const Icon(Icons.send, color: Colors.pink, size: 30))])),
-                ]),
+                body: AnimatedBuilder(
+                  animation: _bgCtrl,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(Colors.pink.shade900, Colors.purple.shade900, _bgCtrl.value)!, Color.lerp(Colors.black, Colors.pink.shade900, _bgCtrl.value)!])),
+                      child: SafeArea(child: Column(children: [
+                        Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [Container(decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.8), blurRadius: 15)]), child: const CircleAvatar(radius: 24, backgroundImage: AssetImage("assets/icons/app-icon.jpg"))), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Girl Pro ✨", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("Online • ${getEmoji()} $_emotion  •  4D Live", style: const TextStyle(fontSize: 12, color: Colors.pinkAccent))]), const Spacer(), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)), child: const Text("LIVE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))])),
+                        Expanded(flex: 3, child: Stack(children: [
+                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)]), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(src: "assets/models/Anime-Girl.glb", alt: "AI Girl", autoRotate: true, cameraControls: true, autoPlay: true))))),
+                          Positioned(top: 12, left: 12, right: 12, child: FadeInDown(child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))])))),
+                          if (_isThinking) const Positioned(bottom: 12, right: 12, child: CircularProgressIndicator(color: Colors.pink)),
+                          if (_emotion == "love") Positioned(top: 90, right: 20, child: FadeInUp(child: const Text("❤️", style: TextStyle(fontSize: 30)))),
+                          if (_emotion == "love") Positioned(top: 110, left: 25, child: FadeInUp(child: const Text("💖", style: TextStyle(fontSize: 24)))),
+                        ])),
+                        Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), child: Wrap(spacing: 8, runSpacing: 6, alignment: WrapAlignment.center, children: [for (var b in ["Hi Jaan! ❤️", "Baat Karo 💬", "Dance Karo 💃", "I Love You 😍", "Sad Hun 😔"]) ElasticIn(child: ElevatedButton(onPressed: () => askGroq(b), style: ElevatedButton.styleFrom(backgroundColor: Colors.pink, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)), elevation: 8, shadowColor: Colors.pink), child: Text(b))])),
+                        Container(margin: const EdgeInsets.all(10), padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(30), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [IconButton(onPressed: listen, icon: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.pink, size: 30)), Expanded(child: TextField(controller: _ctrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: "Kuch likho Jaan... 💌", hintStyle: TextStyle(color: Colors.white54), border: InputBorder.none))), IconButton(onPressed: () { if (_ctrl.text.isNotEmpty) { askGroq(_ctrl.text); _ctrl.clear(); } }, icon: const Icon(Icons.send, color: Colors.pink, size: 30))])),
+                      ])),
+                    );
+                  },
+                ),
               );
             }
           }
@@ -174,7 +183,7 @@ jobs:
           flutter clean
           flutter pub get
           dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Build APK - Message Movement
+      - name: Build APK - Professional 4D
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
