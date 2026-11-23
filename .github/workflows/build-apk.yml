@@ -22,11 +22,27 @@ jobs:
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib assets/models assets/icons
-          echo "CHECK MODEL..."
+          echo "=== AUTO MODEL FINDER ==="
+          ls -R || true
+          echo "--- Sab GLB Dhoond Rahe Hain ---"
+          find . -iname "*.glb" -ls || true
+          # AUTO 1 - Agar Sahi Naam se Nahi Hai To Khud Fix Karo!
+          if [ ! -f assets/models/Anime-Girl.glb ]; then
+            echo "Sahi Naam se Nahi Mila - Auto Fix Kar Rahe Hain..."
+            FOUND=$(find . -iname "*.glb" | head -n 1)
+            echo "Mila: $FOUND"
+            if [ -n "$FOUND" ]; then
+              cp "$FOUND" assets/models/Anime-Girl.glb
+              echo "Copy Ho Gaya!"
+            fi
+          fi
+          # AUTO 2 - Agar Phir Bhi Nahi Mila To Error Dikhao
           ls -lh assets/models/
-          # Agar Model 1 Byte Ka Hai To Ruk Jao - Khali Hai!
-          if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA!"; exit 1; fi
-          if [ ! -f assets/icons/app-icon.jpg ]; then echo "Icon Nahi Hai - Skip"; fi
+          if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA! GitHub me .glb File Daalo!"; exit 1; fi
+          SIZE=$(stat -c%s assets/models/Anime-Girl.glb)
+          echo "Model Size: $SIZE bytes"
+          if [ "$SIZE" -lt 1000 ]; then echo "MODEL KHALI HAI! 1 Byte Wala Hai! Sahi Wala 16MB Wala Daalo!"; exit 1; fi
+          echo "MODEL OK! ✅"
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
           description: Real AI Girl - Groq AI + Emotion + Voice - Animated Fox Girl
@@ -184,7 +200,6 @@ jobs:
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           grep -q "INTERNET" $MANIFEST || sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />|' $MANIFEST
           grep -q "usesCleartextTraffic" $MANIFEST || sed -i 's|<application|<application android:usesCleartextTraffic="true"|' $MANIFEST
-          cat $MANIFEST
           flutter clean
           flutter pub get
           flutter analyze --no-pub || true
