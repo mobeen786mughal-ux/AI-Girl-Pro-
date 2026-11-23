@@ -17,14 +17,14 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Professional 4D - FIXED
+      - name: FULL AUTO - Professional 4D - KEY WALA
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
-          description: Real AI Girl - Groq AI + Emotion + Voice - Professional 4D FIXED
+          description: Real AI Girl - Groq AI + Emotion + Voice - Professional 4D
           publish_to: 'none'
           version: 1.0.0+1
           environment:
@@ -81,7 +81,7 @@ jobs:
             double _girlRotate = 0.0;
             double _girlBounce = 8.0;
             List<Map<String, String>> _history = [];
-            final String groqKey = String.fromEnvironment("GROQ_API_KEY", defaultValue: "PASTE_YOUR_GROQ_KEY_HERE");
+            final String groqKey = String.fromEnvironment("GROQ_API_KEY", defaultValue: "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");
             late AnimationController _bgCtrl;
             late AnimationController _bounceCtrl;
             @override
@@ -184,12 +184,10 @@ jobs:
           flutter pub get
           flutter analyze --no-pub || true
           dart run flutter_launcher_icons || echo "Icon skip"
-      - name: Build APK - Professional 4D FIXED
-        env:
-          GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
+      - name: Build APK - Key Wala
         run: |
+          GROQ_KEY="PASTE_YOUR_GROQ_KEY_HERE"
           echo "Key length: ${#GROQ_KEY}"
-          if [ -z "$GROQ_KEY" ]; then echo "ERROR: GROQ_API_KEY Secret Khali Hai!"; exit 1; fi
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
       - uses: actions/upload-artifact@v4
         with:
