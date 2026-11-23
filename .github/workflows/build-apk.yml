@@ -17,31 +17,21 @@ jobs:
           flutter-version: '3.35.1'
           channel: 'stable'
           cache: true
-      - name: FULL AUTO - Fox Girl - Sab Khud Hoga
+      - name: FULL AUTO - Fox Girl - Camera Fix
         run: |
           flutter create . --org com.aigirl.pro --project-name ai_girl_pro
           git checkout HEAD -- assets/ || true
           mkdir -p lib assets/models assets/icons
           echo "=== AUTO MODEL FINDER ==="
-          ls -R || true
-          echo "--- Sab GLB Dhoond Rahe Hain ---"
           find . -iname "*.glb" -ls || true
-          # AUTO 1 - Agar Sahi Naam se Nahi Hai To Khud Fix Karo!
           if [ ! -f assets/models/Anime-Girl.glb ]; then
-            echo "Sahi Naam se Nahi Mila - Auto Fix Kar Rahe Hain..."
             FOUND=$(find . -iname "*.glb" | head -n 1)
-            echo "Mila: $FOUND"
-            if [ -n "$FOUND" ]; then
-              cp "$FOUND" assets/models/Anime-Girl.glb
-              echo "Copy Ho Gaya!"
-            fi
+            if [ -n "$FOUND" ]; then cp "$FOUND" assets/models/Anime-Girl.glb; fi
           fi
-          # AUTO 2 - Agar Phir Bhi Nahi Mila To Error Dikhao
           ls -lh assets/models/
-          if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA! GitHub me .glb File Daalo!"; exit 1; fi
+          if [ ! -f assets/models/Anime-Girl.glb ]; then echo "MODEL NAHI MILA!"; exit 1; fi
           SIZE=$(stat -c%s assets/models/Anime-Girl.glb)
-          echo "Model Size: $SIZE bytes"
-          if [ "$SIZE" -lt 1000 ]; then echo "MODEL KHALI HAI! 1 Byte Wala Hai! Sahi Wala 16MB Wala Daalo!"; exit 1; fi
+          if [ "$SIZE" -lt 1000 ]; then echo "MODEL KHALI HAI!"; exit 1; fi
           echo "MODEL OK! ✅"
           cat > pubspec.yaml << 'EOF'
           name: ai_girl_pro
@@ -180,8 +170,25 @@ jobs:
                       child: SafeArea(child: Column(children: [
                         Container(padding: const EdgeInsets.all(12), margin: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.pink.withOpacity(0.4))), child: Row(children: [Container(decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.8), blurRadius: 15)]), child: const CircleAvatar(radius: 24, backgroundImage: AssetImage("assets/icons/app-icon.jpg"))), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("AI Fox Girl 🦊", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), Text("Online • ${getEmoji()} $_emotion  •  Animated", style: const TextStyle(fontSize: 12, color: Colors.pinkAccent))]), const Spacer(), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)), child: const Text("LIVE", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))])),
                         Expanded(flex: 3, child: Stack(children: [
-                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)]), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(src: "assets/models/Anime-Girl.glb", alt: "AI Fox Girl", autoRotate: false, cameraControls: true, autoPlay: true))))),
-                          Positioned(top: 12, left: 12, right: 12, child: AnimatedOpacity(opacity: 1.0, duration: const Duration(milliseconds: 500), child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))])))),
+                          AnimatedBuilder(animation: _bounceCtrl, builder: (context, child) { return Transform.translate(offset: Offset(0, math.sin(_bounceCtrl.value * math.pi) * _girlBounce * 0.3), child: child); }, child: AnimatedContainer(duration: const Duration(milliseconds: 700), curve: Curves.elasticOut, transform: Matrix4.identity()..scale(_girlScale)..rotateZ(_girlRotate), child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(25), color: Colors.white.withOpacity(0.08)), margin: const EdgeInsets.all(10), child: ClipRRect(borderRadius: BorderRadius.circular(25), child: ModelViewer(
+                            src: "assets/models/Anime-Girl.glb",
+                            alt: "AI Fox Girl",
+                            autoRotate: true,
+                            autoRotateDelay: 2000,
+                            cameraControls: true,
+                            autoPlay: true,
+                            ar: false,
+                            cameraOrbit: "0deg 75deg 4m",
+                            minCameraRadius: "1m",
+                            maxCameraRadius: "10m",
+                            fieldOfView: "35deg",
+                            exposure: "1.6",
+                            shadowIntensity: "1",
+                            shadowSoftness: "0.5",
+                            backgroundColor: const Color(0x00000000),
+                            loading: Loading.eager,
+                          )))))),
+                          Positioned(top: 12, left: 12, right: 12, child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.pink.withOpacity(0.5))), child: Row(children: [Text(getEmoji(), style: const TextStyle(fontSize: 22)), const SizedBox(width: 8), Expanded(child: Text(_msg, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)))]))),
                           if (_isThinking) const Positioned(bottom: 12, right: 12, child: CircularProgressIndicator(color: Colors.pink)),
                           if (_emotion == "love") const Positioned(top: 90, right: 20, child: Text("❤️", style: TextStyle(fontSize: 30))),
                           if (_emotion == "love") const Positioned(top: 110, left: 25, child: Text("💖", style: TextStyle(fontSize: 24))),
@@ -207,7 +214,6 @@ jobs:
       - name: Build APK - Auto Fox Girl
         run: |
           GROQ_KEY="PASTE_YOUR_GROQ_KEY_HERE"
-          echo "Key length: ${#GROQ_KEY}"
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
       - uses: actions/upload-artifact@v4
         with:
