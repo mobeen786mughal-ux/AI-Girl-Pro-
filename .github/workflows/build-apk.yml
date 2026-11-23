@@ -17,12 +17,16 @@ jobs:
           flutter-version: '3.22.3'
           channel: 'stable'
           cache: true
+      - name: Fix Missing Android Folder
+        run: |
+          flutter create . --org com.aigirl.pro --project-name ai_girl_pro
+          # Tumhari files ko wapas rakho - create ne overwrite kiya hoga to
+          git checkout HEAD -- lib/ pubspec.yaml assets/ || true
+          flutter pub get
       - name: Build Professional APK with Secret Key
         env:
           GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          flutter clean
-          flutter pub get
           flutter build apk --release --dart-define=GROQ_API_KEY=$GROQ_KEY
       - uses: actions/upload-artifact@v4
         with:
